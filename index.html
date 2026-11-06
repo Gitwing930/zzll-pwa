@@ -200,10 +200,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .blank.match-selected .match-slot{border-color:var(--red);background:#FDFAF3;color:var(--red-deep);border-bottom-style:solid}
 .blank.match-ok .match-slot{background:var(--green-soft);border-color:var(--green);border-bottom-style:solid;color:var(--green);font-weight:600;cursor:default}
 .blank.match-no .match-slot{background:var(--wrong-soft);border-color:var(--wrong);color:var(--wrong)}
-.bank{background:var(--card);border:1.5px solid var(--red);border-radius:14px;padding:14px 16px 16px;margin-top:20px;box-shadow:var(--shadow);position:sticky;bottom:10px;z-index:10}
-.bank-title{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.bank-title .dot{width:6px;height:6px;border-radius:50%;background:var(--red)}
-.bank-chips{display:flex;flex-wrap:wrap;gap:8px}
+.bank{background:var(--card);border:1.5px solid var(--red);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);position:sticky;bottom:10px;z-index:10}
+.bank-title{font-size:13px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;min-height:24px}
+.bank-title .dot{width:6px;height:6px;border-radius:50%;background:var(--red);flex:none}
+.bank-title .bank-remain{margin-left:auto;font-weight:600;color:var(--red-deep);font-variant-numeric:tabular-nums}
+.bank-title .bank-fold{flex:none;color:var(--ink-3);transition:transform .18s}
+.bank.collapsed .bank-title .bank-fold{transform:rotate(-90deg)}
+.bank-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;max-height:42vh;overflow-y:auto;padding-bottom:2px}
+.bank.collapsed .bank-chips{display:none}
 .chip{background:var(--paper-2);border:1px solid var(--line);border-radius:9px;padding:7px 14px;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .12s;line-height:1.3}
 .chip:hover{background:var(--red-soft);border-color:var(--red);color:var(--red-deep)}
 .chip.picked{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 3px 10px rgba(166,38,33,.3)}
@@ -242,13 +246,7 @@ body.mode-read .q-text{line-height:2.2}
 
 .hidden{display:none!important}
 </style>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
-</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </head>
 <body>
 <div class="app">
@@ -639,7 +637,7 @@ function renderLearn(){
     }));
     for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
     h+=`<div class="bank">
-      <div class="bank-title"><span class="dot"></span>答案词库（已打乱 · 点词拿起，再点空放下；答对即收入）</div>
+      <div class="bank-title" id="bankTitle"><span class="dot"></span>答案词库<span class="bank-remain" id="bankRemain"></span><svg class="bank-fold" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
       <div class="bank-chips">`;
     pool.forEach((a,i)=>{
       h+=`<button class="chip" data-bid="${a.bid}" data-ans="${esc(a.ans)}">${esc(a.ans)}</button>`;
@@ -665,6 +663,15 @@ function renderLearn(){
 /* 选词填空交互 */
 function bindMatch(){
   let picked=null;
+  const bank=$('#content .bank');
+  const bt=$('#bankTitle');
+  if(bt&&bank) bt.onclick=()=>bank.classList.toggle('collapsed');
+  const updateRemain=()=>{
+    const el=$('#bankRemain'); if(!el) return;
+    const remain=$$('#content .chip').filter(c=>!c.classList.contains('used')).length;
+    el.textContent=' · 剩余 '+remain+' 词';
+  };
+  updateRemain();
   $$('#content .chip').forEach(chip=>{
     chip.onclick=()=>{
       if(chip.classList.contains('used')) return;
@@ -695,6 +702,7 @@ function bindMatch(){
         picked=null;
         setBlank(bid,true);
         afterJudge(true);
+        updateRemain();
       }else{
         slotEl.textContent=word;
         slot.classList.add('match-no');

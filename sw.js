@@ -1,5 +1,5 @@
 // 政治理论填空 PWA 离线缓存
-const CACHE = 'zzll-pwa-v1';
+const CACHE = 'zzll-pwa-v2';
 const ASSETS = [
   './index.html',
   './manifest.json',
