@@ -1,7 +1,7 @@
 {
-  "name": "政治理论填空学习",
-  "short_name": "政治理论填空",
-  "description": "行测政治理论 836 空挖空记忆：默写测验、选词填空、对照背诵",
+  "name": "政治理论 & 常识判断填空学习",
+  "short_name": "政治常识填空",
+  "description": "行测政治理论 836 空 + 常识判断 658 空：默写测验、选词填空、对照背诵",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
